@@ -9,7 +9,7 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                git branch: 'main', url: 'https://github.com/YOUR_GITHUB_USERNAME/YOUR_REPOSITORY.git'
+                git branch: 'main', url: 'https://github.com/srivathsav1010/Devops_project.git'
             }
         }
 
