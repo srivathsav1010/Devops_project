@@ -16,7 +16,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    sh 'docker build -t ${IMAGE_NAME} .'
+                    bat "docker build -t %IMAGE_NAME% ."
                 }
             }
         }
@@ -24,8 +24,10 @@ pipeline {
         stage('Run Docker Container') {
             steps {
                 script {
-                    sh 'docker rm -f ${CONTAINER_NAME} || true'
-                    sh 'docker run -d --name ${CONTAINER_NAME} -p 8081:80 ${IMAGE_NAME}'
+                    // Stop and remove old container if running
+                    bat "docker ps -q -f name=%CONTAINER_NAME% && docker rm -f %CONTAINER_NAME% || echo No container to remove"
+                    // Run a new container
+                    bat "docker run -d --name %CONTAINER_NAME% -p 8081:80 %IMAGE_NAME%"
                 }
             }
         }
@@ -34,7 +36,8 @@ pipeline {
             steps {
                 emailext(
                     subject: "Build Status: ${currentBuild.currentResult}",
-                    body: "Pipeline ${env.JOB_NAME} finished with status: ${currentBuild.currentResult}\nCheck details here: ${env.BUILD_URL}",
+                    body: """Pipeline ${env.JOB_NAME} finished with status: ${currentBuild.currentResult}
+Check details here: ${env.BUILD_URL}""",
                     to: 'srivathsav1010@gmail.com'
                 )
             }
@@ -45,14 +48,16 @@ pipeline {
         success {
             emailext(
                 subject: "✅ SUCCESS: ${JOB_NAME} Build #${BUILD_NUMBER}",
-                body: "Build was successful!\nVisit: ${BUILD_URL}",
+                body: """Build was successful!
+Visit: ${BUILD_URL}""",
                 to: 'srivathsav1010@gmail.com'
             )
         }
         failure {
             emailext(
                 subject: "❌ FAILED: ${JOB_NAME} Build #${BUILD_NUMBER}",
-                body: "Build failed!\nLogs: ${BUILD_URL}",
+                body: """Build failed!
+Logs: ${BUILD_URL}""",
                 to: 'srivathsav1010@gmail.com'
             )
         }
